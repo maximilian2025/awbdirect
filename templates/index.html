@@ -1,41 +1,117 @@
-<script>
-    $(document).ready(function() {
-        $("#track").click(function() {
-            var awb = $("#awb").val().trim();
-            if (awb === "") {
-                alert("Introduceți un număr AWB!");
-                return;
-            }
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWB Direct - Urmărire Colete</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-image: url("https://source.unsplash.com/1600x900/?delivery,truck,logistics");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .btn-custom {
+            width: 100%;
+        }
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .logo-container img {
+            height: 40px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">AWB Direct - Urmărire Colet</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <h3>AWB Național</h3>
+                <input type="text" id="awb" class="form-control" placeholder="Introdu AWB național">
+                <button id="track" class="btn btn-primary mt-2 btn-custom">Caută</button>
+                <div id="result" class="mt-3"></div>
+                
+                <div class="logo-container">
+                    <img src="https://www.fancourier.ro/wp-content/themes/fan2017/img/logo.svg" alt="FAN Courier">
+                    <img src="https://www.cargus.ro/wp-content/uploads/2020/07/logo.png" alt="Cargus">
+                    <img src="https://www.dpd.com/wp-content/uploads/2020/11/DPD_logo.svg" alt="DPD">
+                    <img src="https://www.sameday.ro/wp-content/themes/sameday-v3/img/logo.svg" alt="SameDay">
+                    <img src="https://www.gls-group.com/SiteCollectionImages/GLS_Logos/GLS_Logo.png" alt="GLS">
+                </div>
+            </div>
             
-            $.post("/track", { awb: awb }, function(data) {
-                if (data.error) {
-                    $("#result").html('<p class="text-danger">' + data.error + '</p>');
-                } else {
-                    $("#result").html('<p><strong>Curier:</strong> ' + data.courier + '</p>' +
-                                      '<p><strong>Status:</strong> ' + data.tracking_info.status + '</p>' +
-                                      '<p><strong>Locație:</strong> ' + data.tracking_info.location + '</p>');
+            <div class="col-md-6">
+                <h3>AWB Internațional</h3>
+                <input type="text" id="awb_international" class="form-control" placeholder="Introdu AWB internațional">
+                <button id="track_international" class="btn btn-secondary mt-2 btn-custom">Caută</button>
+                <div id="result_international" class="mt-3"></div>
+                
+                <div class="logo-container">
+                    <img src="https://www.fedex.com/content/dam/fedex-com/logos/logo_fedex_express.png" alt="FedEx">
+                    <img src="https://www.dhl.com/content/dam/dhl/global/core/images/logos/dhl_logo.svg" alt="DHL">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/UPS_Logo_Shield_2017.svg/800px-UPS_Logo_Shield_2017.svg.png" alt="UPS">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        $(document).ready(function() {
+            $("#track").click(function() {
+                var awb = $("#awb").val().trim();
+                if (awb === "") {
+                    alert("Introduceți un număr AWB!");
+                    return;
                 }
-            }).fail(function() {
-                $("#result").html('<p class="text-danger">Eroare la conectarea cu serverul.</p>');
+                
+                $.post("/track", { awb: awb }, function(data) {
+                    if (data.error) {
+                        $("#result").html('<p class="text-danger">' + data.error + '</p>');
+                    } else {
+                        $("#result").html('<p><strong>Curier:</strong> ' + data.courier + '</p>' +
+                                          '<p><strong>Status:</strong> ' + data.tracking_info.status + '</p>' +
+                                          '<p><strong>Locație:</strong> ' + data.tracking_info.location + '</p>');
+                    }
+                }).fail(function() {
+                    $("#result").html('<p class="text-danger">Eroare la conectarea cu serverul.</p>');
+                });
             });
-        });
 
-        $("#track_international").click(function() {
-            var awbInt = $("#awb_international").val().trim();
-            if (awbInt === "") {
-                alert("Introduceți un număr AWB internațional!");
-                return;
-            }
-            
-            $.post("/track-international", { awb: awbInt }, function(data) {
-                if (data.error) {
-                    $("#result_international").html('<p class="text-danger">' + data.error + '</p>');
-                } else {
-                    $("#result_international").html('<p><strong>Status:</strong> ' + data.data[0].track_info.latest_status + '</p>');
+            $("#track_international").click(function() {
+                var awbInt = $("#awb_international").val().trim();
+                if (awbInt === "") {
+                    alert("Introduceți un număr AWB internațional!");
+                    return;
                 }
-            }).fail(function() {
-                $("#result_international").html('<p class="text-danger">Eroare la conectarea cu serverul.</p>');
+                
+                $.post("/track-international", { awb_international: awbInt }, function(data) {
+                    if (data.error) {
+                        $("#result_international").html('<p class="text-danger">' + data.error + '</p>');
+                    } else {
+                        $("#result_international").html('<p><strong>Status:</strong> ' + data.data[0].track_info.latest_status + '</p>');
+                    }
+                }).fail(function() {
+                    $("#result_international").html('<p class="text-danger">Eroare la conectarea cu serverul.</p>');
+                });
             });
         });
-    });
-</script>
+    </script>
+</body>
+</html>
