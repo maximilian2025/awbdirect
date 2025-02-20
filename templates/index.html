@@ -1,121 +1,37 @@
 <!DOCTYPE html>
-<html lang="ro">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AWB Direct - Urmărire Colet</title>
+    <title>AWB Direct - Urmărire & Expediere Colete</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        body {
-            background: url('https://source.unsplash.com/1600x900/?delivery,airplane') no-repeat center center fixed;
-            background-size: cover;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        .container {
-            max-width: 900px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        .btn-custom {
-            background: #ff9800;
-            color: white;
-            padding: 10px;
-            border: none;
-            width: 100%;
-            font-size: 18px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-custom:hover {
-            background: #e68900;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-        }
-        .logos img {
-            width: 80px;
-            margin: 10px;
-        }
-        .auth-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-    </style>
 </head>
-<body>
-    <div class="auth-buttons">
-        <button class="btn btn-light" onclick="location.href='/login'">Log In</button>
-        <button class="btn btn-light" onclick="location.href='/signup'">Sign Up</button>
-    </div>
+<body style="background-image: url('background.jpg'); background-size: cover; text-align: center;">
+
+    <h1 class="text-center text-white">AWB Direct - Urmărire & Expediere Colete</h1>
 
     <div class="container">
-        <h1>AWB Direct - Urmărire Colet</h1>
-
         <div class="row">
-            <!-- AWB Național -->
             <div class="col-md-6">
-                <h3>AWB Național</h3>
+                <h3 class="text-white">AWB Național</h3>
                 <input type="text" id="awb" class="form-control" placeholder="Introdu AWB național">
-                <button id="track" class="btn btn-custom mt-2">Caută</button>
-                <div id="result" class="result"></div>
-                <div class="logos">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/FAN_Courier_logo.svg/1280px-FAN_Courier_logo.svg.png" alt="FAN Courier">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Cargus_logo.png/1280px-Cargus_logo.png" alt="Cargus">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/DPD_logo.svg/1280px-DPD_logo.svg.png" alt="DPD">
-                </div>
+                <button id="track" class="btn btn-primary mt-2">Caută</button>
+                <div id="result"></div>
             </div>
-
-            <!-- AWB Internațional -->
             <div class="col-md-6">
-                <h3>AWB Internațional</h3>
+                <h3 class="text-white">AWB Internațional</h3>
                 <input type="text" id="awb_international" class="form-control" placeholder="Introdu AWB internațional">
-                <button id="track_international" class="btn btn-custom mt-2">Caută</button>
-                <div id="result_international" class="result"></div>
-                <div class="logos">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/UPS_Logo.svg/1280px-UPS_Logo.svg.png" alt="UPS">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/FedEx_Express.svg/1280px-FedEx_Express.svg.png" alt="FedEx">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/DHL_Logo.svg/1280px-DHL_Logo.svg.png" alt="DHL">
-                </div>
+                <button id="track_international" class="btn btn-secondary mt-2">Caută</button>
+                <div id="result_international"></div>
             </div>
         </div>
     </div>
 
     <script>
-        $(document).ready(function() {
-            $('#track').click(function() {
-                var awb = $('#awb').val();
-                $.post('/track', {awb: awb}, function(data) {
-                    if (data.error) {
-                        $('#result').html('<p class="text-danger">' + data.error + '</p>');
-                    } else {
-                        $('#result').html('<p><strong>Curier:</strong> ' + data.courier + '</p>' +
-                                          '<p><strong>Status:</strong> ' + data.tracking_info.status + '</p>' +
-                                          '<p><strong>Locație:</strong> ' + data.tracking_info.location + '</p>');
-                    }
-                });
-            });
-
-            $('#track_international').click(function() {
-                var awbInt = $('#awb_international').val();
-                $.post('/track-international', {awb_international: awbInt}, function(data) {
-                    if (data.error) {
-                        $('#result_international').html('<p class="text-danger">' + data.error + '</p>');
-                    } else {
-                        $('#result_international').html('<p><strong>Status:</strong> ' + data.data[0].track_info.latest_status + '</p>');
-                    }
-                });
-            });
-        });
+        document.getElementById("track").onclick = function() {
+            var awb = document.getElementById("awb").value;
+            fetch('/track', {method: 'POST', body: JSON.stringify({awb: awb}), headers: {'Content-Type': 'application/json'}})
+                .then(response => response.json())
+                .then(data => document.getElementById("result").innerText = JSON.stringify(data));
+        };
     </script>
 </body>
 </html>
