@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ro">
 <head>
@@ -9,32 +8,21 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            background: url('https://source.unsplash.com/1600x900/?delivery,airplane') no-repeat center center fixed;
+            background-size: cover;
             color: white;
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
         }
         .container {
-            max-width: 600px;
-            background: rgba(255, 255, 255, 0.1);
+            max-width: 900px;
+            background: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
-        h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
+        .btn-custom {
             background: #ff9800;
             color: white;
             padding: 10px;
@@ -44,7 +32,7 @@
             cursor: pointer;
             transition: 0.3s;
         }
-        button:hover {
+        .btn-custom:hover {
             background: #e68900;
         }
         .result {
@@ -53,21 +41,53 @@
             background: rgba(255, 255, 255, 0.2);
             border-radius: 5px;
         }
+        .logos img {
+            width: 80px;
+            margin: 10px;
+        }
+        .auth-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
+    <div class="auth-buttons">
+        <button class="btn btn-light" onclick="location.href='/login'">Log In</button>
+        <button class="btn btn-light" onclick="location.href='/signup'">Sign Up</button>
+    </div>
+
     <div class="container">
         <h1>AWB Direct - Urmărire Colet</h1>
 
-        <h3>AWB Național</h3>
-        <input type="text" id="awb" placeholder="Introdu AWB național">
-        <button id="track">Caută</button>
-        <div id="result" class="result"></div>
+        <div class="row">
+            <!-- AWB Național -->
+            <div class="col-md-6">
+                <h3>AWB Național</h3>
+                <input type="text" id="awb" class="form-control" placeholder="Introdu AWB național">
+                <button id="track" class="btn btn-custom mt-2">Caută</button>
+                <div id="result" class="result"></div>
+                <div class="logos">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/FAN_Courier_logo.svg/1280px-FAN_Courier_logo.svg.png" alt="FAN Courier">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Cargus_logo.png/1280px-Cargus_logo.png" alt="Cargus">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/DPD_logo.svg/1280px-DPD_logo.svg.png" alt="DPD">
+                </div>
+            </div>
 
-        <h3>AWB Internațional</h3>
-        <input type="text" id="awb_international" placeholder="Introdu AWB internațional">
-        <button id="track_international">Caută</button>
-        <div id="result_international" class="result"></div>
+            <!-- AWB Internațional -->
+            <div class="col-md-6">
+                <h3>AWB Internațional</h3>
+                <input type="text" id="awb_international" class="form-control" placeholder="Introdu AWB internațional">
+                <button id="track_international" class="btn btn-custom mt-2">Caută</button>
+                <div id="result_international" class="result"></div>
+                <div class="logos">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/UPS_Logo.svg/1280px-UPS_Logo.svg.png" alt="UPS">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/FedEx_Express.svg/1280px-FedEx_Express.svg.png" alt="FedEx">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/DHL_Logo.svg/1280px-DHL_Logo.svg.png" alt="DHL">
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
