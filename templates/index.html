@@ -1,37 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AWB Direct - Urmărire & Expediere Colete</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body style="background-image: url('background.jpg'); background-size: cover; text-align: center;">
+<script>
+    $(document).ready(function() {
+        $("#track").click(function() {
+            var awb = $("#awb").val().trim();
+            if (awb === "") {
+                alert("Introduceți un număr AWB!");
+                return;
+            }
+            
+            $.post("/track", { awb: awb }, function(data) {
+                if (data.error) {
+                    $("#result").html('<p class="text-danger">' + data.error + '</p>');
+                } else {
+                    $("#result").html('<p><strong>Curier:</strong> ' + data.courier + '</p>' +
+                                      '<p><strong>Status:</strong> ' + data.tracking_info.status + '</p>' +
+                                      '<p><strong>Locație:</strong> ' + data.tracking_info.location + '</p>');
+                }
+            }).fail(function() {
+                $("#result").html('<p class="text-danger">Eroare la conectarea cu serverul.</p>');
+            });
+        });
 
-    <h1 class="text-center text-white">AWB Direct - Urmărire & Expediere Colete</h1>
-
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6">
-                <h3 class="text-white">AWB Național</h3>
-                <input type="text" id="awb" class="form-control" placeholder="Introdu AWB național">
-                <button id="track" class="btn btn-primary mt-2">Caută</button>
-                <div id="result"></div>
-            </div>
-            <div class="col-md-6">
-                <h3 class="text-white">AWB Internațional</h3>
-                <input type="text" id="awb_international" class="form-control" placeholder="Introdu AWB internațional">
-                <button id="track_international" class="btn btn-secondary mt-2">Caută</button>
-                <div id="result_international"></div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.getElementById("track").onclick = function() {
-            var awb = document.getElementById("awb").value;
-            fetch('/track', {method: 'POST', body: JSON.stringify({awb: awb}), headers: {'Content-Type': 'application/json'}})
-                .then(response => response.json())
-                .then(data => document.getElementById("result").innerText = JSON.stringify(data));
-        };
-    </script>
-</body>
-</html>
+        $("#track_international").click(function() {
+            var awbInt = $("#awb_international").val().trim();
+            if (awbInt === "") {
+                alert("Introduceți un număr AWB internațional!");
+                return;
+            }
+            
+            $.post("/track-international", { awb: awbInt }, function(data) {
+                if (data.error) {
+                    $("#result_international").html('<p class="text-danger">' + data.error + '</p>');
+                } else {
+                    $("#result_international").html('<p><strong>Status:</strong> ' + data.data[0].track_info.latest_status + '</p>');
+                }
+            }).fail(function() {
+                $("#result_international").html('<p class="text-danger">Eroare la conectarea cu serverul.</p>');
+            });
+        });
+    });
+</script>
