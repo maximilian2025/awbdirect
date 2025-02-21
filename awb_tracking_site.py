@@ -1,30 +1,24 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+from flask import Flask, request, jsonify, render_template
 import requests
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-db = SQLAlchemy(app)
 
-# Definim modelul utilizatorului
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
-
-# Lista firmelor de curierat din România
+# Lista formatelor AWB și curierii corespunzători
 couriers = {
-    "FAN Courier": "https://api.fancourier.ro/awb-status",
-    "Cargus": "https://api.cargus.ro/tracking",
-    "DPD": "https://api.dpd.ro/status",
-    "Sameday": "https://api.sameday.ro/tracking",
-    "GLS": "https://api.gls.ro/track",
-    "Fedex": "https://api.fedex.com/track",
-    "Dragon Star": "https://api.dragonstar.ro/tracking",
-    "Posta Romana": "https://api.posta-romana.ro/awb",
+    "FAN Courier": ["7"],
+    "Cargus": ["1"],
+    "DPD": ["0"],
+    "SameDay": ["2"],
+    "GLS": ["5"],
 }
+
+def identify_courier(awb):
+    """Detectează curierul pe baza numărului AWB"""
+    first_digit = awb[0]  # Prima cifră a AWB
+    for courier, prefixes in couriers.items():
+        if first_digit in prefixes:
+            return courier
+    return "Curier necunoscut"
 
 @app.route('/')
 def index():
@@ -32,58 +26,42 @@ def index():
 
 @app.route('/track', methods=['POST'])
 def track_awb():
-    awb_number = request.form['awb']
-    results = {}
+    awb_number = request.form.get('awb', '').strip()
+    if not awb_number:
+        return jsonify({"error": "Introduceți un număr AWB!"})
 
-    for courier, api_url in couriers.items():
-        response = requests.get(api_url, params={"awb": awb_number})
-        if response.status_code == 200:
-            results[courier] = response.json()
+    courier = identify_courier(awb_number)
+    if courier == "Curier necunoscut":
+        return jsonify({"error": "AWB necunoscut sau curier indisponibil."})
 
-    return jsonify(results)
+    tracking_info = fetch_tracking_info(courier, awb_number)
+    return jsonify({"courier": courier, "tracking_info": tracking_info})
 
-@app.route('/track-international', methods=['POST'])
-def track_awb_international():
-    awb_number = request.form['awb_international']
-    api_url = f"https://api.17track.net/restful/track?numbers={awb_number}"
-    headers = {"Accept": "application/json", "Authorization": "API_KEY_HERE"} # Înlocuiește cu cheia API reală
-    
-    response = requests.get(api_url, headers=headers)
-    return jsonify(response.json()) if response.status_code == 200 else jsonify({"error": "AWB internațional indisponibil."})
+def fetch_tracking_info(courier, awb):
+    """Funcție pentru interogarea API-urilor curierilor"""
+    api_endpoints = {
+        "FAN Courier": "https://api.fancourier.ro/awb-status",
+        "Cargus": "https://api.cargus.ro/tracking",
+        "DPD": "https://api.dpd.ro/status",
+        "SameDay": "https://api.sameday.ro/tracking",
+        "GLS": "https://api.gls.ro/track",
+    }
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username).first()
+    if courier in api_endpoints:
+        try:
+            print(f"🔍 Trimit cerere către {api_endpoints[courier]} cu AWB {awb}")  # Debug
+            response = requests.get(api_endpoints[courier], params={"awb": awb}, timeout=5)
+            print(f"📩 Răspuns: {response.status_code}, {response.text}")  # Debug
 
-        if user and check_password_hash(user.password, password):
-            session['username'] = username
-            return redirect(url_for('index'))
-        return "Login eșuat! Verifică datele introduse."
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return {"status": "Eroare API", "location": "N/A"}
+        except requests.exceptions.RequestException as e:
+            print(f"⚠️ Eroare conexiune: {e}")  # Debug
+            return {"status": "Eroare conexiune API", "location": "N/A"}
 
-    return render_template('login.html')
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = generate_password_hash(request.form['password'], method='sha256')
-
-        new_user = User(username=username, password=password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
-
-    return render_template('signup.html')
-
-@app.route('/logout')
-def logout():
-    session.pop('username', None)
-    return redirect(url_for('index'))
+    return {"status": "Informație indisponibilă", "location": "N/A"}
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)

@@ -1,1 +1,0 @@
-web: gunicorn awb_tracking_site:app
